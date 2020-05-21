@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Products_model;
+use App\Wishlist_model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -53,5 +54,35 @@ class HomeController extends Controller
         return view('frontend.product_detail',compact('products'));
     }
 
-    
+    public function View_Wishist()
+    {
+        $products = DB::table('wishlists')
+            ->leftJoin('products','wishlists.pro_id','=','products.id')
+            ->get();
+
+        return view('frontend.Wishlist',compact('products'));    
+    }
+
+    public function addWishlist(Request $request)
+    {
+
+        $wishlist = new Wishlist_model();
+
+        $wishlist->user_id = Auth::user()->id;
+
+        $wishlist->pro_id  = $request->pro_id;
+
+        $wishlist->save();
+
+        $products = DB::table('products')->where('id',$request->pro_id)->get();
+
+        return view('frontend.product_detail',compact('products')); 
+    }
+
+    public function removeWishList($id)
+    {
+        DB::table('wishlists')->where('pro_id','=',$id)->delete();
+
+        return back()->with('msg','Item Removed Successfully');
+    }
 }
